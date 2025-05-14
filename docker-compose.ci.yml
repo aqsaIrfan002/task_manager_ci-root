@@ -9,7 +9,7 @@ services:
     depends_on:
       - db_ci
     volumes:
-      - ./task_manager:/var/www/html
+      - ./task_manager_ci:/var/www/html
     networks:
       - app-network
 
@@ -24,7 +24,7 @@ services:
       MYSQL_PASSWORD: Task@123
     volumes:
       - db_data_ci:/var/lib/mysql
-      - ./task_manager/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./task_manager_ci/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - app-network
 
