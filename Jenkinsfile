@@ -15,7 +15,7 @@ pipeline {
         stage('Build Docker Images') {
             steps {
                 script {
-                    sh 'docker-compose -p $COMPOSE_PROJECT_NAME -f docker-compose.yml build'
+                    sh 'docker-compose -p $COMPOSE_PROJECT_NAME -f docker-compose.ci.yml build'
                 }
             }
         }
@@ -23,7 +23,7 @@ pipeline {
         stage('Run Containers') {
             steps {
                 script {
-                    sh 'docker-compose -p $COMPOSE_PROJECT_NAME -f docker-compose.yml up -d'
+                    sh 'docker-compose -p $COMPOSE_PROJECT_NAME -f docker-compose.ci.yml up -d'
                 }
             }
         }
@@ -32,7 +32,7 @@ pipeline {
     post {
         always {
             echo 'Cleaning up...'
-            sh 'docker-compose -p $COMPOSE_PROJECT_NAME -f docker-compose.yml down || true'
+            sh 'docker-compose -p $COMPOSE_PROJECT_NAME -f docker-compose.ci.yml down || true'
         }
     }
 }
