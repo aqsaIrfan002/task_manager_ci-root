@@ -8,7 +8,7 @@ RUN docker-php-ext-install mysqli
 RUN a2enmod rewrite
 
 # Copy application code into the container
-COPY task_manager/ /var/www/html/
+COPY task_manager_ci/ /var/www/html/
 
 # Set permissions (optional, but helps avoid permission issues)
 RUN chown -R www-data:www-data /var/www/html/
