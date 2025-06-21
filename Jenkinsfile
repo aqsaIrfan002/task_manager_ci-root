@@ -1,38 +1,61 @@
 pipeline {
     agent any
-
+    
     environment {
-        COMPOSE_PROJECT_NAME = "task_manager_ci"
+        DOCKER_IMAGE = 'task-manager-app'
+        DOCKER_TAG = "${BUILD_NUMBER}"
     }
-
+    
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/aqsaIrfan002/task_manager_ci-root.git'
+                echo 'Checking out code from GitHub...'
+                checkout scm
+                sh 'ls -la'
             }
         }
-
+        
+        stage('Environment Setup') {
+            steps {
+                echo 'Cleaning up existing containers...'
+                sh '''
+                    docker-compose -f docker-compose.ci.yml down || true
+                    docker system prune -f
+                '''
+            }
+        }
+        
         stage('Build Docker Images') {
             steps {
-                script {
-                    sh 'docker-compose -p $COMPOSE_PROJECT_NAME -f docker-compose.ci.yml build'
-                }
+                echo 'Building Docker images...'
+                sh '''
+                    docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} .
+                    docker build -t ${DOCKER_IMAGE}:latest .
+                '''
             }
         }
-
-        stage('Run Containers') {
+        
+        stage('Deploy Application') {
             steps {
-                script {
-                    sh 'docker-compose -p $COMPOSE_PROJECT_NAME -f docker-compose.ci.yml up -d'
-                }
+                echo 'Deploying application...'
+                sh '''
+                    docker-compose -f docker-compose.ci.yml up -d --build
+                    sleep 30
+                    docker-compose -f docker-compose.ci.yml ps
+                '''
             }
         }
     }
-
+    
     post {
-        always {
-            echo 'Cleaning up...'
-            sh 'docker-compose -p $COMPOSE_PROJECT_NAME -f docker-compose.ci.yml down || true'
+        success {
+            echo 'Pipeline executed successfully!'
+            echo 'Application is running at: http://your-ec2-ip:8081'
+        }
+        
+        failure {
+            echo 'Pipeline failed!'
+            sh 'docker-compose -f docker-compose.ci.yml down || true'
         }
     }
 }
